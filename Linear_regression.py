@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib import style
+import pickle
 
 style.use('ggplot')
 
@@ -28,6 +29,7 @@ df.fillna(-99999, inplace=True)
 forecast_out = int(math.ceil(0.01*len(df)))
 print("predicted forecast : ",forecast_out)
 forecast_out = int(input("enter forecast date : "))
+train = int(input("enter 1 to freshly train classifier : "))
 
 print(forecast_out)
 
@@ -44,9 +46,20 @@ df.dropna(inplace = True)
 y = np.array(df['Label'])
 
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
-
-clf = LinearRegression(n_jobs = -1)
-clf.fit(X_train,y_train)
+if train == 1:
+	try:
+		pickle_in = open('LR.pickle','rb')
+		clf = pickle.load(pickle_in)
+	except:
+		clf = LinearRegression(n_jobs = -1)
+		clf.fit(X_train,y_train)
+		with open("LR.pickle",'wb') as f:
+			pickle.dump(clf,f)
+else:
+	clf = LinearRegression(n_jobs = -1)
+	clf.fit(X_train,y_train)
+	with open("LR.pickle",'wb') as f:
+		pickle.dump(clf,f)
 
 acc = clf.score(X_test,y_test)
 
