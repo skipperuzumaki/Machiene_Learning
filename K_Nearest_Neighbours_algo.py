@@ -1,16 +1,26 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import style
 import warnings
 from collections import Counter
-style.use('ggplot')
+import pandas as pd
+import random
 
-dataset = {'k':[[1,2],[2,3],[3,1]],'r':[[6,5],[7,7],[8,6]]}
-new_fet = [5,7]
+df = pd.read_csv('breast-cancer-wisconsin.data')
+df.replace('?',-9999,inplace = True)
+df.drop(['id'] , 1 , inplace = True)
+fd = df.astype(float).values.tolist()
+random.shuffle(fd)
 
-[[plt.scatter(ii[0],ii[1],s=100,color = i) for ii in dataset[i]] for i in dataset]
+testsize = 0.2
+train_set = {2:[],4:[]}
+test_set = {2:[],4:[]}
+train_data = fd[:-int(testsize*len(fd))]
+test_data = fd[-int(testsize*len(fd)): ]
 
-plt.scatter(new_fet[0],new_fet[1],s=100,color = 'b')
+for i in train_data:
+	train_set[i[-1]].append(i[:-1])
+
+for i in test_data:
+	test_set[i[-1]].append(i[:-1])
 
 def K_NN(data,predict,k=3):
 	if(len(data)>=k):
@@ -23,8 +33,18 @@ def K_NN(data,predict,k=3):
 			dist.append([disq,grp])
 	votes = [i[1]for i in sorted(dist)[:k]]
 	vr = Counter(votes).most_common(1)[0][0]
-	return vr
+	conf = Counter(votes).most_common(1)[0][1]/k
+	return vr , conf
 
-res = K_NN(dataset,new_fet)
-print(res)
-plt.show()
+correct = 0
+total = 0
+
+for grp in test_set:
+	for data in test_set[grp]:
+		vote , conf = K_NN(train_set,data,k=7)
+		if grp == vote:
+			correct+=1
+		else:
+			print(conf)
+		total +=1
+print(correct/total)
