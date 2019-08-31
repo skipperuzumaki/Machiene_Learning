@@ -18,13 +18,14 @@ class SVM:
 		all_data = []
 		for yi in self.data:
 			for ft in self.data[yi]:
-				all_data.append(ft)
-		self.max_ft = max(all_data[0])
-		self.min_ft = min(all_data[0])
+				for f in ft:
+					all_data.append(f)
+		self.max_ft = max(all_data)
+		self.min_ft = min(all_data)
 		all_data = None
 		step_size = [self.max_ft*0.1,self.max_ft*0.01,self.max_ft*0.001,self.max_ft*0.0001]
-		b_rng_multple = 5
-		b_mtpl = 5
+		b_rng_multple = 50
+		b_mtpl = 1
 		ltst_optm = self.max_ft*10
 		for step in step_size:
 			w = np.array([ltst_optm,ltst_optm])
@@ -41,7 +42,7 @@ class SVM:
 									fnd_opt =False
 						if fnd_opt:
 							opt_dict[np.linalg.norm(w_t)] = [w_t,b]
-				if w[0] < 0:
+				if w[0] < 0 and w[1] < 0:
 					optimized = True
 					print('optimized step')
 				else:
@@ -51,6 +52,10 @@ class SVM:
 			self.w = opt_choice[0]
 			self.b = opt_choice[1]
 			ltst_optm = opt_choice[0][0]+step*2
+
+			for i in self.data:
+				for xi in self.data[i]:
+					print(xi,':',i*(np.dot(self.w,xi)+self.b))
 
 	def predict(self,feat):
 		cl = (feat[0]*float(self.w[0])+feat[1]*float(self.w[1]))+self.b
